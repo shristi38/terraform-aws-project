@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket       = "shrishti-terraform-state-2026"
-    key          = "terraform.tfstate"
-    region       = "us-east-2"
+    bucket = "shrishti-terraform-state-2026"
+    key    = "terraform.tfstate"
+    region = "us-east-2"
   }
 }
 
