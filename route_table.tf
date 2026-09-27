@@ -1,5 +1,5 @@
 resource "aws_route_table" "main" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = module.vpc.vpc_id
   tags = {
     Name = "terraform-public-route-table"
   }

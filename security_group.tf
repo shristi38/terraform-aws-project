@@ -1,7 +1,7 @@
 resource "aws_security_group" "main" {
   name        = "terraform-project-sg"
   description = "Security group for Terraform project"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 22
