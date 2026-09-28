@@ -111,4 +111,5 @@ Terraform uses the AWS provider to communicate with AWS and provision the requir
 7. An Amazon Linux 2023 AMI is dynamically discovered using a Terraform data source.
 8. An EC2 `t3.micro` instance is provisioned in the public subnet.
 
+
 9. Terraform outputs expose the VPC ID, subnet ID, EC2 instance ID, and public IP.
