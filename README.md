@@ -177,6 +177,65 @@ pipeline {
 - Remote Terraform state
 - Manual approval before deployment
 
+## Troubleshooting
+
+### Jenkins Node Offline
+
+Jenkins initially reported insufficient temporary disk space because `/tmp` was a small `tmpfs` filesystem.
+
+The Jenkins disk-space monitoring threshold was adjusted so that the Jenkins node could come online.
+
+### Maven Not Found
+
+The Jenkins pipeline initially failed because Maven was not installed on the EC2 instance.
+
+Maven was installed and the pipeline was successfully executed afterward.
+
+### Jenkins Build Failure
+
+The Jenkins build was checked by verifying Git configuration, Maven installation, Java version, `pom.xml`, and the `Jenkinsfile`.
+
+After correcting the configuration, the pipeline executed successfully.
+
+### Terraform Validation / Plan Failure
+
+Terraform issues were troubleshooting using:
+
+```bash
+terraform validate
+terraform plan
+```
+
+AWS credentials, region, AMI configuration, IAM permissions, and Terraform configuration were verified.
+
+### AWS EC2 Infrastructure Issue
+
+The EC2 instance and related infrastructure created through Terraform were verified to ensure the resources were created successfully.
+
+Terraform output and AWS console details were used to confirm the infrastructure.
+
+### GitHub Webhook Issue
+
+If Jenkins was not triggered automatically, the GitHub webhook configuration and Jenkins trigger settings were verified.
+
+Webhook delivery status was checked from GitHub.
+
+## Key DevOps Concepts Demonstrated
+
+* Infrastructure as Code (IaC)
+* Terraform
+* AWS EC2 Provisioning
+* Jenkins CI/CD Pipeline
+* GitHub Integration
+* Maven Build Automation
+* Java Application Build
+* Jenkins Troubleshooting
+* AWS Infrastructure Management
+* Linux Administration
+* GitHub Webhooks
+* Automated Infrastructure Deployment
+
+
 ## Future Improvements
 
 - DynamoDB state locking
