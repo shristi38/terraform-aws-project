@@ -1,115 +1,197 @@
-# Terraform AWS Infrastructure Project
+# Terraform AWS Infrastructure with Jenkins CI/CD
 
-## Project Overview
+## Overview
 
-This project demonstrates how to provision and manage AWS infrastructure using Terraform as Infrastructure as Code (IaC).
+This project demonstrates how to provision and manage AWS infrastructure using **Terraform** and automate the Terraform workflow using **Jenkins CI/CD**.
 
-The infrastructure includes an AWS VPC, public subnet, Internet Gateway, route table, security group, and an Amazon Linux EC2 instance.
+The project follows Infrastructure as Code (IaC) principles, where AWS infrastructure is defined, version-controlled, validated, planned, and deployed through automation.
 
-Terraform variables, outputs, state management, and an AWS AMI data source are used to make the infrastructure reusable and maintainable.
+## Features
 
-## Architecture
+- Terraform fundamentals
+- AWS provider configuration
+- Terraform variables and outputs
+- Terraform modules
+- AWS VPC networking
+- EC2 provisioning
+- Dynamic AMI selection
+- Terraform remote state using Amazon S3
+- AWS IAM authentication
+- GitHub integration
+- Jenkins CI/CD
+- Terraform validation, plan, apply, and destroy
+
+---
+
+## Project Architecture
 
 ```text
-                         Terraform
-                             |
-                             v
-                    +------------------+
-                    |      AWS VPC     |
-                    |    10.0.0.0/16   |
-                    +--------+---------+
-                             |
-                             v
-                    +------------------+
-                    |  Public Subnet   |
-                    |   10.0.1.0/24    |
-                    +--------+---------+
-                             |
-              +--------------+--------------+
-              |                             |
-              v                             v
-     +------------------+          +------------------+
-     |  Route Table     |          | Security Group  |
-     |  0.0.0.0/0       |          | SSH : 22        |
-     +--------+---------+          | HTTP: 80        |
-              |                    +------------------+
-              v                             |
-     +------------------+                    |
-     | Internet Gateway |                    |
-     +------------------+                    |
-                                            v
-                                  +------------------+
-                                  | EC2 Instance     |
-                                  | Amazon Linux 2023|
-                                  | t3.micro         |
-                                  +------------------+
+Developer -> GitHub -> Jenkins -> Terraform Pipeline -> AWS Infrastructure
+```
 
-## Technologies Used
+## Technology Stack
 
 - Terraform
-- AWS
-  - VPC
-  - Subnet
-  - Internet Gateway
-  - Route Table
-  - Security Group
-  - EC2
-- Amazon Linux 2023
-- Git & GitHub
-- Terraform AWS Provider
-
-## Infrastructure Created
-
-| Resource | Purpose |
-|---|---|
-| VPC | Provides an isolated AWS network |
-| Public Subnet | Hosts the EC2 instance |
-| Internet Gateway | Provides internet connectivity |
-| Route Table | Routes internet-bound traffic through the Internet Gateway |
-| Route Table Association | Associates the route table with the subnet |
-| Security Group | Controls inbound and outbound traffic |
-| EC2 Instance | Runs the application/server workload |
-
-### Security Group Rules
-
-- SSH — Port 22
-- HTTP — Port 80
-- Outbound traffic — All protocols
+- AWS (VPC, EC2, S3, IAM)
+- Jenkins
+- GitHub
+- Git
+- AWS CLI
+- Linux
 
 ## Terraform Project Structure
 
 ```text
 terraform-aws-project/
-│
 ├── main.tf
 ├── variables.tf
-├── terraform.tfvars
 ├── outputs.tf
 ├── data.tf
-├── vpc.tf
 ├── subnet.tf
 ├── internet_gateway.tf
 ├── route_table.tf
 ├── security_group.tf
-├── ec2.tf
-├── .gitignore
-├── .terraform.lock.hcl
-└── README.md
+├── terraform.tfvars
+└── modules/
+    ├── vpc/
+    └── ec2/
+```
 
-> **Note:** `terraform.tfvars` is excluded from version control using `.gitignore` because it contains environment-specific configuration values.
+## AWS Provider
 
-## How It Works
+```hcl
+provider "aws" {
+  region = var.aws_region
+}
+```
 
-Terraform uses the AWS provider to communicate with AWS and provision the required infrastructure.
+Region: `us-east-2`
 
-1. The VPC is created with the `10.0.0.0/16` CIDR block.
-2. A public subnet is created inside the VPC.
-3. An Internet Gateway is attached to the VPC.
-4. A route table is configured with a default route (`0.0.0.0/0`) through the Internet Gateway.
-5. The route table is associated with the public subnet.
-6. A security group allows SSH and HTTP traffic and permits outbound traffic.
-7. An Amazon Linux 2023 AMI is dynamically discovered using a Terraform data source.
-8. An EC2 `t3.micro` instance is provisioned in the public subnet.
+## Variables Example
 
+```hcl
+variable "aws_region" {
+  description = "The AWS region to deploy resources in"
+  type        = string
+  default     = "us-east-2"
+}
+```
 
-9. Terraform outputs expose the VPC ID, subnet ID, EC2 instance ID, and public IP.
+## Terraform Modules
+
+### VPC Module
+
+```hcl
+module "vpc" {
+  source   = "./modules/vpc"
+  vpc_cidr = var.vpc_cidr
+}
+```
+
+### EC2 Module
+
+```hcl
+module "ec2" {
+  source = "./modules/ec2"
+}
+```
+
+## Dynamic Amazon Linux AMI
+
+Uses a Terraform data source to fetch the latest Amazon Linux 2023 AMI dynamically.
+
+## Networking
+
+- VPC: 10.0.0.0/16
+- Subnet: 10.0.1.0/24
+- AZ: us-east-2a
+- Internet Gateway
+- Route Table
+- Security Group
+
+## Terraform Outputs
+
+```hcl
+output "public_ip" {
+  value = module.ec2.public_ip
+}
+```
+
+## Remote State
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket = "shrishti-terraform-state-2026"
+    key    = "terraform.tfstate"
+    region = "us-east-2"
+  }
+}
+```
+
+## Terraform Workflow
+
+```text
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+terraform output
+terraform destroy
+```
+
+## Jenkins CI/CD Pipeline
+
+Stages:
+1. Checkout
+2. Terraform Init
+3. Terraform Format Check
+4. Terraform Validate
+5. Terraform Plan
+6. Manual Approval
+7. Terraform Apply
+8. Terraform Output
+
+### Pipeline Example
+
+```groovy
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Terraform Init') { steps { sh 'terraform init' } }
+    stage('Terraform Validate') { steps { sh 'terraform validate' } }
+    stage('Terraform Plan') { steps { sh 'terraform plan' } }
+    stage('Approval') { steps { input message: 'Approve Terraform deployment?' } }
+    stage('Terraform Apply') { steps { sh 'terraform apply -auto-approve' } }
+  }
+}
+```
+
+## Security Considerations
+
+- IAM Role based authentication
+- No hardcoded credentials
+- S3 Block Public Access
+- Remote Terraform state
+- Manual approval before deployment
+
+## Future Improvements
+
+- DynamoDB state locking
+- Terraform workspaces
+- Multi-environment deployments
+- Security scanning
+- Slack/Email notifications
+- Automated testing
+
+## Repository
+
+GitHub Repository:
+
+https://github.com/shristi38/terraform-aws-project
+
+## Interview Summary
+
+I worked on an Infrastructure-as-Code project using Terraform and AWS, building a VPC, subnet, internet gateway, route table, security group, and EC2 instance. I modularised the infrastructure, implemented remote state in S3, and integrated GitHub with Jenkins for automated Terraform validation, planning, approval, and deployment workflows.
